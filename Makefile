@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -std=gnu17 -O2 -Wall -Wextra -Wpedantic -Wstrict-aliasing
+CFLAGS = -std=gnu17 -O1 -Wall -Wextra -Wpedantic -Wstrict-aliasing
 CFLAGS += -Wno-pointer-arith -Wno-newline-eof -Wno-unused-parameter -Wno-gnu-statement-expression -Wno-unused-variable -Wno-unused-function
 CFLAGS += -Wno-gnu-compound-literal-initializer -Wno-gnu-zero-variadic-macro-arguments
 CFLAGS += -Isrc -Ilib/cglm/include -Ilib/glad/include -Ilib/glfw/include `pkg-config --cflags glib-2.0` -Ilib/stb
