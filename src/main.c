@@ -1,16 +1,16 @@
 #include "state.h"
 #include "gfx/window.h"
 #include "gfx/shader.h"
-#include "gfx/texture.h"
+#include "gfx/atlas.h"
 #include "world/world.h"
 
 State state;
 
 static void _init(void) {
-	state.window = &window;
 	shader_init(&state.shader, "res/shaders/default.vert", "res/shaders/default.frag");
-	texture_init(&state.texture, "res/textures/stone.jpg");
+    atlas_init(&state.atlas, "res/textures/atlas.png");
 	world_init(&state.world);
+    block_init();
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -46,6 +46,7 @@ static void _render(void) {
 
 static void _destroy(void) {
 	shader_destroy(&state.shader);
+    atlas_destroy(&state.atlas);
 	world_destroy(&state.world);
 }
 

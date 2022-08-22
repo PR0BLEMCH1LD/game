@@ -1,10 +1,23 @@
 #include "chunk.h"
 #include "world.h"
 #include "../state.h"
+#include "../gfx/atlas.h"
+
+#define BPOS2CIDX(_p) ((_p).z * CHUNK_SIZE.y * CHUNK_SIZE.x + (_p).y * CHUNK_SIZE.x + (_p).x)
+
+#define chunk_foreach(_pname)\
+    ivec3s _pname = GLMS_IVEC3_ZERO;\
+    for (s32 x = 0; x < CHUNK_SIZE.x; x++)\
+        for (s32 y = 0; y < CHUNK_SIZE.y; y++)\
+            for (s32 z = 0;\
+                z < CHUNK_SIZE.z &&\
+                ((_pname.x = x) != INT32_MAX) &&\
+                ((_pname.y = y) != INT32_MAX) &&\
+                ((_pname.z = z) != INT32_MAX);\
+                z++)
 
 static bool _block_in_bounds(ivec3s pos) {
-    return pos.x >= 0 && pos.y >= 0 && pos.z >= 0 &&
-        pos.x < CHUNK_SIZE.x && pos.y < CHUNK_SIZE.y && pos.z < CHUNK_SIZE.z;
+    return pos.x >= 0 && pos.y >= 0 && pos.z >= 0 && pos.x < CHUNK_SIZE.x && pos.y < CHUNK_SIZE.y && pos.z < CHUNK_SIZE.z;
 }
 
 static bool _block_on_bounds(ivec3s pos) {
@@ -40,18 +53,16 @@ static void _process(Chunk* self) {
 	chunk_foreach(pos) {
 		vec3s fpos = IVEC3S2V(pos);
         ivec3s wpos = glms_ivec3_add(pos, self->position);
-		u32 data = self->data[BPOS2CI(pos)];
+		BlockId data = self->data[BPOS2CIDX(pos)];
 
-		if (data != 0) {
-			for (Direction dir = 0; dir < 6; dir++) {
+		if (data != AIR) {
+			for (Direction dir = NORTH; dir <= DOWN; dir++) {
                 ivec3s dvec = DIR2IVEC3S(dir);
 				ivec3s neighbor = glms_ivec3_add(pos, dvec), wneighbor = glms_ivec3_add(wpos, dvec);
 
-				if (_block_in_bounds(neighbor) ? 
-                        self->data[BPOS2CI(neighbor)] == 0 : 
-                        world_chunk_in_bounds(&state.world, wneighbor) 
-                            && world_get_data(&state.world, wneighbor) == 0) {
-					mesh_emit_face(&self->mesh, fpos, dir);
+				if (_block_in_bounds(neighbor) ? self->data[BPOS2CIDX(neighbor)] == AIR : 
+                        world_chunk_in_bounds(&state.world, wneighbor) && world_get_data(&state.world, wneighbor) == AIR) {
+					mesh_emit_face(&self->mesh, fpos, dir, atlas_get_sprite_offset(&state.atlas, BLOCKS[data].texture_location), state.atlas.sprite_unit);
 				}
 			}
 		}
@@ -60,10 +71,10 @@ static void _process(Chunk* self) {
 	mesh_finalize(&self->mesh);
 }
 
-void chunk_set_data(Chunk* self, ivec3s pos, u32 data) {
+void chunk_set_data(Chunk* self, ivec3s pos, BlockId data) {
     assert(_block_in_bounds(pos));
 
-    self->data[BPOS2CI(pos)] = data;
+    self->data[BPOS2CIDX(pos)] = data;
 
     if (_block_on_bounds(pos)) {
         Chunk** neighbors = _get_bordering_chunks(self, pos);
@@ -80,16 +91,16 @@ void chunk_set_data(Chunk* self, ivec3s pos, u32 data) {
     self->mesh.dirty = true;
 }
 
-u32 chunk_get_data(Chunk* self, ivec3s pos) {
+BlockId chunk_get_data(Chunk* self, ivec3s pos) {
     assert(_block_in_bounds(pos));
 
-    return self->data[BPOS2CI(pos)];
+    return self->data[BPOS2CIDX(pos)];
 }
 
 void chunk_init(Chunk* self, ivec3s pos) {
 	memset(self, 0, sizeof(Chunk));
     mesh_init(&self->mesh, self);
-	self->data = calloc(1, CHUNK_VOLUME * sizeof(u32));
+	self->data = calloc(CHUNK_VOLUME, sizeof(BlockId));
     self->position = pos;
 }
 

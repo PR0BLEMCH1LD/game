@@ -1,6 +1,19 @@
 #include "world.h"
-#include "chunk.h"
 #include "worldgen.h"
+
+#define CHUNKS_SIZE(_w) ((_w)->render_distance * 2 + 1)
+#define NUM_CHUNKS(_w) (CHUNKS_SIZE((_w)) * CHUNKS_SIZE((_w)))
+
+#define CPOS2COFF(_p) ((ivec3s) {{ (s32)floorf((_p).x / CHUNK_SIZE_F.x), 0, (s32)floorf((_p).z / CHUNK_SIZE_F.z) }})
+#define CIDX2COFF(_w, _i) glms_ivec3_add((_w)->first_chunk, (ivec3s) {{ (_i) % CHUNKS_SIZE((_w)), 0, (_i) / CHUNKS_SIZE((_w)) }})
+#define CPOS2CIDX(_w, _p) ({ ivec3s p = glms_ivec3_sub(CPOS2COFF((_p)), (_w)->first_chunk); p.z * CHUNKS_SIZE((_w)) + p.x; })
+#define POS2BPOS(_p) glms_ivec3_mod(glms_ivec3_add(glms_ivec3_mod(_p, CHUNK_SIZE), CHUNK_SIZE), CHUNK_SIZE)
+
+#define world_foreach(_w, _cname)\
+    Chunk* _cname;\
+    for (u64 idx = 0; idx < NUM_CHUNKS(_w) &&\
+        (_cname = (_w)->chunks[idx]) != (void *)UINT64_MAX;\
+        idx++)
 
 static s32 _WorldModifiedDatacmp(gconstpointer a, gconstpointer b) {
     const WorldModifiedData* _a = a, * _b = b;
@@ -37,7 +50,7 @@ static void _load_empty_chunks(World* self) {
 bool world_chunk_in_bounds(World *self, ivec3s pos) {
     ivec3s p = glms_ivec3_sub(CPOS2COFF(pos), self->first_chunk);
 
-    return p.x >= 0 && p.z >= 0 && p.x < (s32)self->chunks_size && p.z < (s32)self->chunks_size;
+    return p.x >= 0 && p.z >= 0 && p.x < (s32)CHUNKS_SIZE(self) && p.z < (s32)CHUNKS_SIZE(self);
 }
 
 Chunk* world_get_chunk(World* self, ivec3s pos) {
@@ -48,13 +61,13 @@ Chunk* world_get_chunk(World* self, ivec3s pos) {
     return self->chunks[CPOS2CIDX(self, pos)];
 }
 
-void world_set_data(World* self, ivec3s pos, u32 data) {
+void world_set_data(World* self, ivec3s pos, BlockId data) {
     if (world_get_chunk(self, pos) != NULL) {
         chunk_set_data(world_get_chunk(self, pos), POS2BPOS(pos), data);
     }
 }
 
-u32 world_get_data(World* self, ivec3s pos) {
+BlockId world_get_data(World* self, ivec3s pos) {
     if (pos.y >= 0 && pos.y < CHUNK_SIZE.y && world_get_chunk(self, pos) != NULL) {
         return chunk_get_data(world_get_chunk(self, pos), POS2BPOS(pos));
     }
@@ -65,7 +78,7 @@ u32 world_get_data(World* self, ivec3s pos) {
 void world_set_center(World* self, ivec3s pos) {
     ivec3s new_first_chunk = glms_ivec3_sub(
         CPOS2COFF(pos),
-        (ivec3s) {{ self->chunks_size / 2, 0, self->chunks_size / 2 }}
+        (ivec3s) {{ CHUNKS_SIZE(self) / 2, 0, CHUNKS_SIZE(self) / 2 }}
     );
 
     if (!ivec3scmp(new_first_chunk, self->first_chunk)) {
@@ -88,7 +101,7 @@ void world_set_center(World* self, ivec3s pos) {
         else if (world_chunk_in_bounds(self, chunk->position)) {
             u32 i = CPOS2CIDX(self, chunk->position);
 
-            if (i >= NUM_CHUNKS(self) - self->chunks_size || (i + 1) % self->chunks_size == 0) {
+            if (i >= NUM_CHUNKS(self) - CHUNKS_SIZE(self) || (i + 1) % CHUNKS_SIZE(self) == 0) {
                 chunk->mesh.dirty = true;
             }
 
@@ -107,7 +120,12 @@ void world_append_modified_data(World* self, WorldModifiedData mdata) {
     u32 idx;
 
     if (g_array_binary_search(self->modified_data, &mdata, _WorldModifiedDatacmp, &idx)) {
-        g_array_remove_index_fast(self->modified_data, idx);
+        if (mdata.data == END_STONE) {
+            g_array_remove_index_fast(self->modified_data, idx);
+        }
+        else {
+            g_array_index(self->modified_data, WorldModifiedData, idx) = mdata;
+        }
     }
     else {
         g_array_append_val(self->modified_data, mdata);
@@ -118,11 +136,10 @@ void world_append_modified_data(World* self, WorldModifiedData mdata) {
 
 void world_init(World* self) {
 	memset(self, 0, sizeof(World));
+    player_init(&self->player);
     self->render_distance = 4;
-    self->chunks_size = self->render_distance * 2 + 1;
     self->chunks = calloc(NUM_CHUNKS(self), sizeof(Chunk*));
     self->modified_data = g_array_new(false, false, sizeof(WorldModifiedData));
-    player_init(&self->player);
 
     world_set_center(self, GLMS_IVEC3_ZERO);
 }

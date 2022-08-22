@@ -19,11 +19,11 @@ typedef struct Mesh {
 	VAO vao;
 	BO vbo, ebo;
     u64 vertex_count;
-    Chunk* chunk;
     bool dirty;
+    Chunk* chunk;
 } Mesh;
 
-void mesh_emit_face(Mesh* mesh, vec3s position, Direction dir);
+void mesh_emit_face(Mesh* mesh, vec3s pos, Direction dir, vec2s uv_offset, vec2s uv_unit);
 void mesh_init(Mesh* self, Chunk* chunk);
 void mesh_prepare(Mesh* self);
 void mesh_finalize(Mesh* self);

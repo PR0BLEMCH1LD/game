@@ -4,10 +4,9 @@
 void camera_init(Camera* self) {
 	memset(self, 0, sizeof(Camera));
 	self->fov = radians(45);
-	self->aspect = (f32)state.window->size.x / state.window->size.y;
+	self->aspect = (f32)window.size.x / window.size.y;
 	self->znear = 0.01f;
 	self->zfar = 1000.0f;
-    self->pitch = 0.0f;
 	self->yaw = -PI_2;
 
     camera_update(self);

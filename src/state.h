@@ -6,13 +6,12 @@
 
 #include "gfx/window.h"
 #include "gfx/shader.h"
-#include "gfx/texture.h"
+#include "gfx/atlas.h"
 #include "world/world.h"
 
 typedef struct State {
-	Window* window;
 	Shader shader;
-	Texture texture;
+    Atlas atlas;
 	World world;
 } State;
 

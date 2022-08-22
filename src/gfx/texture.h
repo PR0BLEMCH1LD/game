@@ -6,6 +6,7 @@
 
 typedef struct Texture {
 	GLuint handle;
+    ivec2s size;
 } Texture;
 
 void texture_bind(Texture* self);

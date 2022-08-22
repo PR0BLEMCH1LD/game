@@ -15,6 +15,8 @@ void texture_init(Texture* self, const char* path) {
     int width, height, channels;
 	unsigned char* image = stbi_load(path, &width, &height, &channels, 0);
 
+    self->size = (ivec2s) {{ width, height }};
+
     texture_bind(self);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -22,7 +24,7 @@ void texture_init(Texture* self, const char* path) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
 
 	stbi_image_free(image);

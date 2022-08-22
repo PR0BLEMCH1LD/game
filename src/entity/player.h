@@ -5,10 +5,12 @@
 #include "../util/util.h"
 
 #include "camera.h"
+#include "../block/block.h"
 
 typedef struct Player {
 	Camera camera;
 	f32 speed, reach;
+    BlockId selected_block;
 } Player;
 
 void player_init(Player* self);

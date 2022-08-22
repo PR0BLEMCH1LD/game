@@ -104,8 +104,8 @@ void window_init(FWindow init, FWindow tick, FWindow update, FWindow render, FWi
     window.last_second = NOW();
 
     window.size = (ivec2s) {{ 1200, 720 }};
-    window.tickrate = 128;
-    window.mouse.sensitivity = 2.0f;
+    window.tickrate = 60;
+    window.mouse.sensitivity = 1.5f;
 
     glfwInit();
 

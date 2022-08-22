@@ -1,7 +1,9 @@
 #include "mesh.h"
 #include "../gfx/shader.h"
 #include "../state.h"
-#include "../gfx/texture.h"
+
+#define DATA_BUFFER_SIZE 16 * 256 * 16 * 120
+#define INDICES_BUFFER_SIZE 16 * 256 * 16 * 36
 
 const u8 FACE_INDICES[] = { 1, 0, 3, 1, 3, 2 };
 const u8 UNIQUE_INDICES[] = { 1, 0, 5, 2 };
@@ -31,22 +33,19 @@ const f32 CUBE_UVS[] = {
 	1.0f, 1.0f
 };
 
-#define DATA_BUFFER_SIZE 16 * 256 * 16 * 120
-#define INDICES_BUFFER_SIZE 16 * 256 * 16 * 36
-
 struct {
 	f32 data[DATA_BUFFER_SIZE];
 	u32 indices[INDICES_BUFFER_SIZE];
 } global_buffer;
 
-void mesh_emit_face(Mesh* mesh, vec3s pos, Direction dir) {
+void mesh_emit_face(Mesh* mesh, vec3s pos, Direction dir, vec2s uv_offset, vec2s uv_unit) {
 	for (u8 idx = 0; idx < 4; idx++) {
 		const f32 *vertex = &CUBE_VERTICES[CUBE_INDICES[(dir * 6) + UNIQUE_INDICES[idx]] * 3];
 		((f32*)mesh->data.data)[mesh->data.count++] = pos.x + vertex[0];
 		((f32*)mesh->data.data)[mesh->data.count++] = pos.y + vertex[1];
 		((f32*)mesh->data.data)[mesh->data.count++] = pos.z + vertex[2];
-		((f32*)mesh->data.data)[mesh->data.count++] = CUBE_UVS[(idx * 2) + 0];
-		((f32*)mesh->data.data)[mesh->data.count++] = CUBE_UVS[(idx * 2) + 1];
+		((f32*)mesh->data.data)[mesh->data.count++] = uv_offset.x + uv_unit.x * CUBE_UVS[(idx * 2) + 0];
+		((f32*)mesh->data.data)[mesh->data.count++] = uv_offset.y + uv_unit.y * CUBE_UVS[(idx * 2) + 1];
 	}
 
 	for (u8 idx = 0; idx < 6; idx++) {
@@ -92,7 +91,7 @@ void mesh_render(Mesh* self) {
 
     shader_uniform_mat4(&state.shader, "m", glms_translate(glms_mat4_identity(), IVEC3S2V(self->chunk->position)));
 	shader_uniform_camera(&state.shader, &state.world.player.camera);
-	shader_uniform_texture2D(&state.shader, "tex", &state.texture, 0);	
+	shader_uniform_texture2D(&state.shader, "tex", &state.atlas.texture, 0);	
 
 	const u8 data_stride = 5 * sizeof(f32);
 
