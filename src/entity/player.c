@@ -54,7 +54,7 @@ void player_tick(Player* self) {
             world_append_modified_data(&state.world, ((WorldModifiedData) { .position = ipos, .data = AIR }));
         }
 
-        if (window.mouse.buttons[GLFW_MOUSE_BUTTON_RIGHT].pressed) {
+        if (window.mouse.buttons[GLFW_MOUSE_BUTTON_RIGHT].pressed && world_get_data(&state.world, VEC3S2I(self->camera.position)) == AIR) {
             ivec3s dpos = glms_ivec3_add(ipos, DIR2IVEC3S(iface));
 
             world_set_data(&state.world, dpos, self->selected_block);

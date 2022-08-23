@@ -120,12 +120,7 @@ void world_append_modified_data(World* self, WorldModifiedData mdata) {
     u32 idx;
 
     if (g_array_binary_search(self->modified_data, &mdata, _WorldModifiedDatacmp, &idx)) {
-        if (mdata.data == END_STONE) {
-            g_array_remove_index_fast(self->modified_data, idx);
-        }
-        else {
-            g_array_index(self->modified_data, WorldModifiedData, idx) = mdata;
-        }
+        g_array_index(self->modified_data, WorldModifiedData, idx) = mdata;
     }
     else {
         g_array_append_val(self->modified_data, mdata);
