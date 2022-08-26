@@ -2,7 +2,7 @@
 #include "../state.h"
 #include "../world/world.h"
 
-static vec3s _find(vec3s s, vec3s ds) {
+static vec3s find(vec3s s, vec3s ds) {
     vec3s v;
 
     for (size_t i = 0; i < 3; i++) {
@@ -19,7 +19,7 @@ bool ray_intersect_block(Ray ray, ivec3s* pos_out, Direction* dir_out) {
 
     pos = VEC3S2I(ray.origin);
     step = (ivec3s) {{ sign(ray.direction.x), sign(ray.direction.y), sign(ray.direction.z) }};
-    tmax = _find(ray.origin, ray.direction);
+    tmax = find(ray.origin, ray.direction);
     tdelta = glms_vec3_div(IVEC3S2V(step), ray.direction);
     radius = state.world.player.reach / glms_vec3_norm(ray.direction);
 

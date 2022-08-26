@@ -2,13 +2,13 @@
 
 Window window;
 
-static void _frame_buffer_size_callback(GLFWwindow* handle, int width, int height) {
+static void frame_buffer_size_callback(GLFWwindow* handle, int width, int height) {
 	glViewport(0, 0, width, height);
 
 	window.size = (ivec2s) {{ width, height }};
 }
 
-static void _mouse_button_callback(GLFWwindow* handle, int button, int action, int mods) {
+static void mouse_button_callback(GLFWwindow* handle, int button, int action, int mods) {
     if (button < 0) {
         return;
     }
@@ -25,7 +25,7 @@ static void _mouse_button_callback(GLFWwindow* handle, int button, int action, i
     }
 }
 
-static void _key_callback(GLFWwindow* handle, int key, int scancode, int action, int mods) {
+static void key_callback(GLFWwindow* handle, int key, int scancode, int action, int mods) {
 	if (key < 0) {
 		return;
 	}
@@ -42,7 +42,7 @@ static void _key_callback(GLFWwindow* handle, int key, int scancode, int action,
 	}
 }
 
-static void _cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos) {
+static void cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos) {
 	vec2s pos = {{ xpos, ypos }};
 
     window.mouse.delta = window.mouse.not_first ? 
@@ -54,39 +54,39 @@ static void _cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos) {
 	window.mouse.position = pos;
 }
 
-static void _button_array_tick(u16 last, Button* buttons) {
+static void button_array_tick(u16 last, Button* buttons) {
 	for (u16 idx = 0; idx < last; idx++) {
 		buttons[idx].pressed = buttons[idx].down && !buttons[idx].last;
 		buttons[idx].last = buttons[idx].down;
 	}
 }
 
-static void _init(void) {
+static void init(void) {
 	window.init();
 }
 
-static void _tick(void) {
+static void tick(void) {
     window.ticks++;
 
-    _button_array_tick(GLFW_MOUSE_BUTTON_LAST, window.mouse.buttons);
-	_button_array_tick(GLFW_KEY_LAST, window.keyboard.keys);
+    button_array_tick(GLFW_MOUSE_BUTTON_LAST, window.mouse.buttons);
+	button_array_tick(GLFW_KEY_LAST, window.keyboard.keys);
 
     window.tick();
 }
 
-static void _update(void) {
+static void update(void) {
     window.update();
 
     window.mouse.delta = GLMS_VEC2_ZERO;
 }
 
-static void _render(void) {
+static void render(void) {
     window.frames++;
 
     window.render();
 }
 
-static void _destroy(void) {
+static void destroy(void) {
     window.destroy();
 
     glfwDestroyWindow(window.handle);
@@ -104,7 +104,7 @@ void window_init(FWindow init, FWindow tick, FWindow update, FWindow render, FWi
     window.last_second = NOW();
 
     window.size = (ivec2s) {{ 1200, 720 }};
-    window.tickrate = 60;
+    window.tickrate = 120;
     window.mouse.sensitivity = 1.5f;
 
     glfwInit();
@@ -118,16 +118,16 @@ void window_init(FWindow init, FWindow tick, FWindow update, FWindow render, FWi
     glfwMakeContextCurrent(window.handle);
     glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    glfwSetFramebufferSizeCallback(window.handle, _frame_buffer_size_callback);
-    glfwSetCursorPosCallback(window.handle, _cursor_pos_callback);
-    glfwSetMouseButtonCallback(window.handle, _mouse_button_callback);
-    glfwSetKeyCallback(window.handle, _key_callback);
+    glfwSetFramebufferSizeCallback(window.handle, frame_buffer_size_callback);
+    glfwSetCursorPosCallback(window.handle, cursor_pos_callback);
+    glfwSetMouseButtonCallback(window.handle, mouse_button_callback);
+    glfwSetKeyCallback(window.handle, key_callback);
 
     gladLoadGL();
 }
 
 void window_loop(void) {
-	_init();
+	init();
 
 	while (!glfwWindowShouldClose(window.handle)) {
 		const u64 now = NOW();
@@ -149,18 +149,18 @@ void window_loop(void) {
 		u64 tick_time = window.frame_delta + window.tick_remainder;
 
 		while (tick_time > NS_PER_TICK) {
-			_tick();
+			tick();
 			tick_time -= NS_PER_TICK;
 		}
 
 		window.tick_remainder = max(tick_time, 0);
 		
-		_update();
-		_render();
+		update();
+		render();
         
 		glfwSwapBuffers(window.handle);
 		glfwPollEvents();
 	}
 
-	_destroy();
+	destroy();
 }

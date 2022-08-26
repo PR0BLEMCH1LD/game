@@ -15,13 +15,13 @@
         (_cname = (_w)->chunks[idx]) != (void *)UINT64_MAX;\
         idx++)
 
-static s32 _WorldModifiedDatacmp(gconstpointer a, gconstpointer b) {
+static s32 WorldModifiedDatacmp(gconstpointer a, gconstpointer b) {
     const WorldModifiedData* _a = a, * _b = b;
 
     return ivec3scmp(_a->position, _b->position);
 }
 
-static void _load_chunk(World* self, u64 idx) {
+static void load_chunk(World* self, u64 idx) {
     Chunk* chunk = malloc(sizeof(Chunk));
 
     chunk_init(chunk, glms_ivec3_mul(CIDX2COFF(self, idx), CHUNK_SIZE));
@@ -39,10 +39,10 @@ static void _load_chunk(World* self, u64 idx) {
     }
 }
 
-static void _load_empty_chunks(World* self) {
+static void load_empty_chunks(World* self) {
     for (u64 idx = 0; idx < NUM_CHUNKS(self); idx++) {
         if (self->chunks[idx] == NULL) {
-            _load_chunk(self, idx);
+            load_chunk(self, idx);
         }
     }
 }
@@ -113,20 +113,20 @@ void world_set_center(World* self, ivec3s pos) {
         }
     }
 
-    _load_empty_chunks(self);
+    load_empty_chunks(self);
 }
 
 void world_append_modified_data(World* self, WorldModifiedData mdata) {
     u32 idx;
 
-    if (g_array_binary_search(self->modified_data, &mdata, _WorldModifiedDatacmp, &idx)) {
+    if (g_array_binary_search(self->modified_data, &mdata, WorldModifiedDatacmp, &idx)) {
         g_array_index(self->modified_data, WorldModifiedData, idx) = mdata;
     }
     else {
         g_array_append_val(self->modified_data, mdata);
     }
 
-    g_array_sort(self->modified_data, _WorldModifiedDatacmp);
+    g_array_sort(self->modified_data, WorldModifiedDatacmp);
 }
 
 void world_init(World* self) {

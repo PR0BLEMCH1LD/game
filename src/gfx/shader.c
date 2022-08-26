@@ -1,6 +1,6 @@
 #include "shader.h"
 
-static GLuint _compile(const char* path, GLenum type) {
+static GLuint compile(const char* path, GLenum type) {
     FILE* f;
     char* text;
     long len;
@@ -50,8 +50,8 @@ void shader_uniform_camera(Shader* self, Camera* camera) {
 
 void shader_init(Shader* self, const char* vpath, const char* fpath) {
     memset(self, 0, sizeof(Shader));
-	self->vhandle = _compile(vpath, GL_VERTEX_SHADER);
-	self->fhandle = _compile(fpath, GL_FRAGMENT_SHADER);
+	self->vhandle = compile(vpath, GL_VERTEX_SHADER);
+	self->fhandle = compile(fpath, GL_FRAGMENT_SHADER);
 	self->handle = glCreateProgram();
 
 	glAttachShader(self->handle, self->vhandle);
