@@ -1,6 +1,6 @@
 #include "block.h"
 
-Block BLOCKS[BLOCK_ID_SIZE];
+Block BLOCKS[BLOCKID_LAST + 1];
 
 void end_stone_init(void);
 void end_stone_bricks_init(void);

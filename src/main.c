@@ -27,8 +27,6 @@ static void init(void) {
 }
 
 static void tick(void) {
-    world_set_center(&state.world, VEC3S2I(state.world.player.camera.position));
-
     world_tick(&state.world);
 }
 

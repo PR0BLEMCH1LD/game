@@ -140,6 +140,8 @@ void world_init(World* self) {
 }
 
 void world_tick(World* self) {
+    world_set_center(self, VEC3S2I(self->player.camera.position));
+
 	player_tick(&self->player);
 }
 

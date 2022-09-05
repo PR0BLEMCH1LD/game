@@ -4,7 +4,7 @@
 #include "../gfx/gfx.h"
 #include "../util/util.h"
 
-#define BLOCK_ID_SIZE 6
+#define BLOCKID_LAST PURPUR_BLOCK
 
 typedef enum BlockId {
     AIR = 0,
@@ -19,7 +19,7 @@ typedef struct Block {
     ivec2s texture_location;
 } Block;
 
-extern Block BLOCKS[BLOCK_ID_SIZE];
+extern Block BLOCKS[BLOCKID_LAST + 1];
 
 void block_init(void);
 
