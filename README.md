@@ -1,4 +1,4 @@
-# OPENGL VOXEL ENGINE DEMO (sex)
+# OPENGL VOXEL ENGINE DEMO
 
 #### Building
 
